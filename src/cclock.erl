@@ -54,6 +54,7 @@ init([]) ->
 	error_logger:info_msg("~p [~p] is starting...\n", [?MODULE, self()]),
 	FixInterval = application:get_env(cclock, fix_interval, ?DEFAULT_FIX),
 	{ok, FixTimer} = timer:send_interval(FixInterval, {sent_fix}),
+	columbo:send_to_all(?MODULE, {fix, local_timestamp()}),
 	{ok, #state{fix=0, timer=FixTimer}}.
 
 %% handle_call
