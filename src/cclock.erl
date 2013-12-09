@@ -40,8 +40,7 @@ local_timestamp() ->
 	TS = {_,_, Micro} = os:timestamp(),
 	Utc = calendar:now_to_universal_time(TS),
 	Seconds = calendar:datetime_to_gregorian_seconds(Utc),
-	Microseconds = trunc(Micro/1000),
-	((Seconds - 62167219200) * 1000) + Microseconds. 
+	((Seconds - 62167219200) * 1000000) + Micro. 
 
 %% ====================================================================
 %% Behavioural functions 
