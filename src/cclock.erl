@@ -53,29 +53,32 @@ init([]) ->
 	error_logger:info_msg("~p [~p] is starting...\n", [?MODULE, self()]),
 	FixInterval = application:get_env(cclock, fix_interval, ?DEFAULT_FIX),
 	{ok, FixTimer} = timer:send_interval(FixInterval, {sent_fix}),
-	columbo:send_to_all(?MODULE, {fix, local_timestamp()}),
+	sync(),
 	{ok, #state{fix=0, timer=FixTimer}}.
 
 %% handle_call
 handle_call({timestamp}, _From, State=#state{fix=Fix}) ->
-	Reply = local_timestamp() + Fix,
-	{reply, Reply, State}.
+	Timestamp = timestamp(Fix),
+	{reply, Timestamp, State}.
 
 %% handle_cast
 handle_cast(_Msg, State) ->
 	{noreply, State}.
 
 %% handle_info
-handle_info({fix, RemoteTS}, State=#state{fix=Fix}) ->
-	LocalTS = local_timestamp(),
-	Dif = RemoteTS - LocalTS,
-	NFix = if Dif > Fix -> Dif;
-		true -> Fix
-	end,
+handle_info({sync, RemoteTS}, State=#state{fix=Fix}) ->
+	NFix = fix(RemoteTS, Fix),
+	{noreply, State#state{fix=NFix}};
+
+handle_info({sync, RemoteTS, From}, State=#state{fix=Fix}) ->
+	NFix = fix(RemoteTS, Fix),
+	Timestamp = timestamp(Fix),
+	From ! sync_msg(Timestamp),
 	{noreply, State#state{fix=NFix}};
 
 handle_info({sent_fix}, State=#state{fix=Fix}) ->
-	columbo:send_to_all(?MODULE, {fix, local_timestamp() + Fix}),
+	Timestamp = timestamp(Fix),
+	columbo:send_to_all(?MODULE, sync_msg(Timestamp)),
 	{noreply, State}.
 
 %% terminate
@@ -90,3 +93,19 @@ code_change(_OldVsn, State, _Extra) ->
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
+
+sync() ->
+	columbo:send_to_all(?MODULE, {sync, local_timestamp(), self()}).
+
+fix(RemoteTS, Fix) ->
+	LocalTS = local_timestamp(),
+	Dif = RemoteTS - LocalTS,
+	if Dif > Fix -> Dif;
+		true -> Fix
+	end.
+
+timestamp(Fix) ->
+	local_timestamp() + Fix.
+
+sync_msg(Timestamp) ->
+	{sync, Timestamp}.
