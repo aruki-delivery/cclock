@@ -29,18 +29,25 @@
 %% ====================================================================
 -export([start_link/0]).
 -export([cluster_timestamp/0, local_timestamp/0]).
+-export([time_fix/0]).
 
 start_link() ->
 	gen_server:start_link(?SERVER, ?MODULE, [], []).
 
+-spec cluster_timestamp() -> integer().
 cluster_timestamp() ->
 	gen_server:call(?MODULE, {timestamp}).
 
+-spec local_timestamp() -> integer().
 local_timestamp() ->
 	TS = {_,_, Micro} = os:timestamp(),
 	Utc = calendar:now_to_universal_time(TS),
 	Seconds = calendar:datetime_to_gregorian_seconds(Utc),
 	((Seconds - 62167219200) * 1000000) + Micro. 
+
+-spec time_fix() -> integer().
+time_fix() ->
+	gen_server:call(?MODULE, {time_fix}).
 
 %% ====================================================================
 %% Behavioural functions 
@@ -59,7 +66,10 @@ init([]) ->
 %% handle_call
 handle_call({timestamp}, _From, State=#state{fix=Fix}) ->
 	Timestamp = timestamp(Fix),
-	{reply, Timestamp, State}.
+	{reply, Timestamp, State};
+
+handle_call({time_fix}, _From, State=#state{fix=Fix}) ->
+	{reply, Fix, State}.
 
 %% handle_cast
 handle_cast(_Msg, State) ->
