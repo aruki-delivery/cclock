@@ -2,7 +2,7 @@ defmodule GibReel.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :gibreel,
+    [app: :cclock,
       version: "0.1.0",
       language: :erlang,
       deps: deps(Mix.env()),
