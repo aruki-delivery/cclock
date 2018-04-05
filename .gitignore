@@ -2,3 +2,6 @@ deps/*
 ebin/*
 .DS_Store
 /ebin/
+.idea
+*.iml
+_build
