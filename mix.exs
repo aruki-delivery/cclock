@@ -1,4 +1,4 @@
-defmodule GibReel.Mixfile do
+defmodule CClock.Mixfile do
   use Mix.Project
 
   def project do
