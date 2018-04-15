@@ -3,7 +3,8 @@ defmodule CClock.Mixfile do
 
   def project do
     [app: :cclock,
-      version: "1.0.0",
+      version: "2.0.0",
+      language: :erlang,
       deps: deps(Mix.env()),
       description: "Cluster clock",
       package: package(),
@@ -19,7 +20,7 @@ defmodule CClock.Mixfile do
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:mix_test_watch, "~> 0.3", only: :dev, runtime: false},
       {:excoveralls, "~> 0.8", only: :test},
-      {:columbo, "~> 1.0"},
+      {:columbo, "~> 2.0"},
       {:ex_doc, ">= 0.0.0", only: :dev}
     ]
   end
